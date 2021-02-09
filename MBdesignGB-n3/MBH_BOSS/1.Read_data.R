@@ -3,6 +3,8 @@
 library( rgdal)
 library( sp)
 library( raster)
+library(rgeos)
+library(sf)
 
 
 
@@ -19,6 +21,7 @@ setwd(w.dir)
 m.dir <- "/home/anitag3/MBH-GeoBay/MBdesignGB-n3"
 p.dir <- paste(w.dir,"plots",sep="/")
 o.dir <- paste(w.dir,"outputs",sep="/")
+d.dir <- paste(w.dir,"data",sep="/")
 s.dir <- paste(m.dir,"SpatialData",sep="/")
 
 
@@ -41,6 +44,9 @@ HPZ <- gb[1,]
 NPZ <- gb[3,]
 #MUZ <- gb[4,]
 
+gbs <- readOGR(paste(d.dir, "GB_shallow.shp", sep='/'))
+
+
 # if you want to add control sites
 # controls <- readOGR(paste(s.dir, "GB-controlsites-utm.shp", sep='/'))
 # controls$Name
@@ -59,6 +65,8 @@ zones$HPZ <- HPZ
 zones$HPZ@data[,1] <- TRUE
 zones$NPZ <- NPZ
 zones$NPZ@data[,1] <- TRUE
+zones$GBS <- gbs 
+zones$GBS@data[,1] <- TRUE
 # add control zones
 # zones$HPZ.c1 <- HPZ.c1
 # zones$HPZ.c1@data[,1] <- TRUE
@@ -73,7 +81,7 @@ zones$NPZ@data[,1] <- TRUE
 
 #combine
 zones$allSurvArea <- union( zones$HPZ, zones$NPZ)
-# zones$allSurvArea <- union( zones$allSurvArea, zones$HPZ.c1)
+zones$allSurvArea <- union( zones$allSurvArea, zones$GBS)
 # zones$allSurvArea <- union( zones$allSurvArea, zones$HPZ.c2)
 # zones$allSurvArea <- union( zones$allSurvArea, zones$HPZ.c3)
 # zones$allSurvArea <- union( zones$allSurvArea, zones$NPZ.c1)
@@ -88,6 +96,7 @@ plot(gb)
 plot( zones$allSurvArea, col='light grey', border='light grey', add=T)
 plot( zones$HPZ, col='orange', border='green', add=T)
 plot( zones$NPZ, col='green', border='dark green', add=T)
+plot( zones$GBS, col='blue', border='blue', add=T)
 # plot( zones$HPZ.c1, add=TRUE, col='light grey', border='orange')
 # plot( zones$HPZ.c2, add=TRUE, col='light grey', border='orange')
 # plot( zones$HPZ.c3, add=TRUE, col='light grey', border='orange')
@@ -107,7 +116,7 @@ plot(b2)
 
 bhpz <- mask(bathy, HPZ)
 bnpz <- mask(bathy, NPZ)
-
+bgbs <- mask(bathy, gbs)
 
 # Get needed coarse bathy
 #b3 <- crop(bathy, zones$coarsebathyzones)
@@ -125,7 +134,7 @@ bnpz <- mask(bathy, NPZ)
 
 gb_rasters <- list()
 gb_rasters$bathy <- bathy
-gb_rasters$b.rest <- b2
+gb_rasters$gbs <- bgbs
 gb_rasters$HPZ <- bhpz
 gb_rasters$NPZ <- bnpz
 #Nin_rasters$bathy <- raster( x="~/NESP/MonitoringTheme/Ningaloo19/data/Bathy2Aug/depth_195_50m_WGS84.tif")
@@ -166,7 +175,7 @@ gb_rasters$NPZ <- bnpz
 #convert and combine
 tmp1 <- as.data.frame( gb_rasters$HPZ, xy=TRUE)
 tmp2 <- as.data.frame( gb_rasters$NPZ, xy=TRUE)
-tmp3 <- as.data.frame( gb_rasters$b.rest, xy=TRUE)
+tmp3 <- as.data.frame( gb_rasters$gbs, xy=TRUE)
 # tmp4 <- as.data.frame( HPZ.c2_raster, xy=TRUE)
 # tmp5 <- as.data.frame( HPZ.c3_raster, xy=TRUE)
 # tmp6 <- as.data.frame( NPZ.c1_raster, xy=TRUE)
@@ -182,7 +191,7 @@ GBDat <- cbind( GBDat, tmp3[,3])
 # GBDat <- cbind( GBDat, tmp7[,3])
 GBDat <- cbind( GBDat, tmp8[,3])
 
-colnames( GBDat) <- c("Eastern", "Northing", "HPZ", "NPZ", "b.rest", "bathy")
+colnames( GBDat) <- c("Eastern", "Northing", "HPZ", "NPZ", "gbs", "bathy")
 
 setwd("/home/anitag3/MBH-GeoBay/MBdesignGB-n3/MBH_BOSS/data")
 saveRDS( GBDat, file="GBData_forBOSS.RDS")
