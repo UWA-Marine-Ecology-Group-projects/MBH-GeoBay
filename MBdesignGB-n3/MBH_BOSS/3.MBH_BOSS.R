@@ -11,6 +11,7 @@ library( pdist)
 library( raster)
 library( rgdal)
 library( sp)
+library( rgeos)
 
 # clear environment ----
 rm(list = ls())
@@ -29,7 +30,7 @@ s.dir <- paste(m.dir,"SpatialData",sep="/")
 
 # read in the inclusion probs
 
-inclProbs <- raster(paste(d.dir, "inclProbs_forBOSS_2.tif", sep='/'))
+inclProbs <- raster(paste(d.dir, "inclProbs_forBOSS_3.tif", sep='/'))
 plot(inclProbs)
 inclProbs <- setValues( inclProbs, values( inclProbs) / sum( values( inclProbs), na.rm=TRUE))
 plot(inclProbs)
@@ -168,7 +169,7 @@ allz <- readOGR(paste(d.dir, "all.zones.GB.Boss.shp", sep='/'))
 plot(allz, add=T)
 points(newSites, pch = 20, cex = 0.3)
 
-writeOGR(newSites, o.dir, "GB_BOSS_d2", driver = "ESRI Shapefile")
+writeOGR(newSites, o.dir, "GB_BOSS_d3", driver = "ESRI Shapefile")
 
 
 
@@ -176,10 +177,11 @@ writeOGR(newSites, o.dir, "GB_BOSS_d2", driver = "ESRI Shapefile")
 ### Make sure the drops are ~ 50 m apart ----
 
 inclProbs <- raster(paste(d.dir, "inclProbs_forBOSS.tif", sep='/'))
-  
+ 
+ 
 s <- readOGR(paste(o.dir, "GB_BOSS_d1.shp", sep='/'))
 s # make sure is in UTM
-
+s <- newSites
 
 ## calculate if 2 points fall within 25m of eachother ----
 # https://gis.stackexchange.com/questions/102796/remove-points-within-x-distance
@@ -202,16 +204,34 @@ s[v1, ] # 98 features left
 plot(inclProbs)
 plot(s[v1, ], pch=20, col='black', cex = 0.3, add=T)
 
-# save points in utm and latlong ----
-## Save points of design ---
-all2 <- all[v1, ]
-all2 # 70 clusters
-# transform again
-all2u <- spTransform(all2, gacrs)
 
-plot(inclProbs)
-plot(all2[all2$class=="MBH",], pch=20, col='black', add=T)
-plot(all2[all2$class=="Legacy",], pch=20, col='red', add=T)
+## add unique id to points ----
+IDnumber <- paste0('Boss',1:250)
+s$IDnumber <- IDnumber
+s
+
+
+writeOGR(newSites, o.dir, "GB_BOSS_d3", driver = "ESRI Shapefile", overwrite = TRUE)
+
+
+
+
+# save points in utm and latlong ----
+d <- raster(paste(s.dir, "GB_CMR_bathy.tif", sep='/'))
+d
+
+## Save points of design ---
+#all2 <- all[v1, ]
+#all2 # 70 clusters
+# transform again
+s2 <- spTransform(s, proj4string(d))
+
+writeOGR(newSites, o.dir, "GB_BOSS_d3_utm", driver = "ESRI Shapefile", overwrite = TRUE)
+
+
+# plot(inclProbs)
+# plot(all2[all2$class=="MBH",], pch=20, col='black', add=T)
+# plot(all2[all2$class=="Legacy",], pch=20, col='red', add=T)
 
 #writeOGR(all2, d.dir, "Allclusters-filtered-d7", driver="ESRI Shapefile")
 

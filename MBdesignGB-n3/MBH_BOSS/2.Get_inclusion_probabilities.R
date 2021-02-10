@@ -23,8 +23,8 @@ s.dir <- paste(m.dir,"SpatialData",sep="/")
 #read in data
 
 SWDat <- readRDS(paste(d.dir, "GBData_forBOSS.RDS", sep='/'))
-sw_rasters <- raster(paste(d.dir, "bathy-for-boss.tif", sep='/'))
-#sw_rasters <- readRDS(paste(d.dir,"GBRasters_forBOSS.RDS", sep='/'))
+#sw_rasters <- raster(paste(d.dir, "bathy-for-boss.tif", sep='/'))
+sw_rasters <- readRDS(paste(d.dir,"GBRasters_forBOSS.RDS", sep='/'))
 zones <- readRDS(paste(d.dir, "GBZones_forBOSS.RDS", sep='/'))
 
 # GB marine park polygon ----
@@ -63,7 +63,7 @@ tmp <- cumsum( Bathy.quant)
 #Bathy.targetProps <-  Bathy.targetNums / sum( Bathy.targetNums) # 0.5 0.5
 Bathy.targetProps <- c(0.1,0.3, 0.4, 0.2)
 Bathy.targetProps.hpz <- c(0.3,0.3,0.3,0.1)
-Bathy.targetProps.npz <- c(0,0.7,0.3)
+Bathy.targetProps.npz <- c(0,0.3,0.7)
 
 # Proportion of potential sites in each zone ----
 
@@ -81,12 +81,12 @@ props <- props / sum( props) # inside  0.5502533 - outside 0.4497467
 ####  To get cut points
 ###################################
 
-catB <- cut( sw_rasters$bathy, breaks=Bathy.cuts, na.rm=TRUE)
+catB <- cut(sw_rasters$bathy, breaks=Bathy.cuts, na.rm=TRUE)
 plot(catB)
 plot(zones$allSurvArea, add=T)
 
 #plot( zones$InsideMP, add=T); plot( catB, add=TRUE); plot( zones$OutsideMP, add=TRUE)
-plot( catB, add=TRUE); plot( zones$HPZ, add=T);  plot( zones$NPZ, add=TRUE)
+plot( catB); plot( zones$HPZ, add=T);  plot( zones$NPZ, add=TRUE);  plot( zones$GBS, add=TRUE)
 #plot(swnp, add=T)
 
 writeRaster(catB, paste(d.dir, 'Bathy_cuts_BOSS.tif', sep='/'), overwrite=TRUE)
@@ -124,7 +124,7 @@ for( zz in c( "HPZ", "NPZ", "GBS")){
 }
 inclProbs@data@values[inclProbs@data@values %in% c(0,1,2,3,4,5,6,7,8)] <- NA  #cheats way to crop
 plot( inclProbs)
-
+ip <- inclProbs
 
 #standardising so that the zone totals are correct according to straw.props | straw.nums
 hpz <- extract( x=catB, y=zones$HPZ, cellnumbers=TRUE)
@@ -136,7 +136,7 @@ gbs <- extract( x=catB, y=zones$GBS, cellnumbers=TRUE)
 
 inclProbs@data@values[hpz[[1]][,'cell']] <- inclProbs@data@values[hpz[[1]][,'cell']] * straw.props["HPZ"]
 inclProbs@data@values[npz[[1]][,'cell']] <- inclProbs@data@values[npz[[1]][,'cell']] * straw.props["NPZ"]
-inclProbs@data@values[gbs[[1]][,'cell']] <- inclProbs@data@values[gbs[[1]][,'cell']] * straw.props["gbs"]
+inclProbs@data@values[gbs[[1]][,'cell']] <- inclProbs@data@values[gbs[[1]][,'cell']] * straw.props["GBS"]
 
 #inclProbs@data@values[HPZZone[[1]][,'cell']] <- inclProbs@data@values[HPZZone[[1]][,'cell']] * straw.props["HPZ"]
 #inclProbs@data@values[NPZZone[[1]][,'cell']] <- inclProbs@data@values[NPZZone[[1]][,'cell']] * straw.props["NPZ"]
@@ -144,8 +144,9 @@ inclProbs@data@values[gbs[[1]][,'cell']] <- inclProbs@data@values[gbs[[1]][,'cel
 plot(inclProbs)
 
 
-writeRaster(inclProbs,paste(d.dir, 'inclProbs_forBOSS_2.tif', sep='/'), overwrite=TRUE)
-t <- raster(paste(d.dir, 'inclProbs_forBOSS.tif', sep='/'))
-plot(t)
-sumr <- cellStats(t, 'sum')
+writeRaster(inclProbs,paste(d.dir, 'inclProbs_forBOSS_3.tif', sep='/'), overwrite=TRUE)
+
+
+# to check if sum of cells (probs) = 1
+sumr <- cellStats(inclProbs, 'sum')
 sumr
