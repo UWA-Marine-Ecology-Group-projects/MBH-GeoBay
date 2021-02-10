@@ -29,7 +29,7 @@ s.dir <- paste(m.dir,"SpatialData",sep="/")
 
 # read in the inclusion probs
 
-inclProbs <- raster(paste(d.dir, "inclProbs_forBOSS.tif", sep='/'))
+inclProbs <- raster(paste(d.dir, "inclProbs_forBOSS_2.tif", sep='/'))
 plot(inclProbs)
 inclProbs <- setValues( inclProbs, values( inclProbs) / sum( values( inclProbs), na.rm=TRUE))
 plot(inclProbs)
@@ -46,9 +46,9 @@ names(straw.nums) <- c("HPZ", "NPZ", "GBS")
 straw.nums[1]
 
 # To change straw.nums ----
-straw.nums <- c(70, 70, 200)  #numbers of drops in and out
-straw.props <- straw.nums / sum( straw.nums) # 0.625 0.375
-names( straw.nums) <- names( straw.props) <- c("HPZ", "NPZ", "GBS")
+# straw.nums <- c(70, 70, 200)  #numbers of drops in and out
+# straw.props <- straw.nums / sum( straw.nums) # 0.625 0.375
+# names( straw.nums) <- names( straw.props) <- c("HPZ", "NPZ", "GBS")
 #saveRDS( straw.nums, file="StrawmanNumbers_Zones.RDS")
 
 ################################
@@ -171,30 +171,21 @@ points(newSites, pch = 20, cex = 0.3)
 writeOGR(newSites, o.dir, "GB_BOSS_d2", driver = "ESRI Shapefile")
 
 
-# FOR BOSS UP TO HERE ----
 
 
+### Make sure the drops are ~ 50 m apart ----
 
-### Make sure the clusters centres are ~ 1 km apart ----
+inclProbs <- raster(paste(d.dir, "inclProbs_forBOSS.tif", sep='/'))
+  
+s <- readOGR(paste(o.dir, "GB_BOSS_d1.shp", sep='/'))
+s # make sure is in UTM
 
-# Join Deans and New sites data --
-newSites$class <- "MBH"
-Deans$class <- "Legacy"
-all <- union(newSites, Deans)
-all # 80 clusters
 
-## read object in utm ----
-ga <- raster(paste(s.dir, "ga4858_grid2_MSL.tiff", sep='/'))
-gacrs <-  proj4string(ga)
-
-## transform the points into UTM --
-p1u <- spTransform(all, gacrs)
-
-## calculate if 2 points fall within 250m of eachother ----
+## calculate if 2 points fall within 25m of eachother ----
 # https://gis.stackexchange.com/questions/102796/remove-points-within-x-distance
 
 ## p1 ----
-p1_matrix <- gWithinDistance(p1u, dist = 1000, byid = TRUE)
+p1_matrix <- gWithinDistance(s, dist = 50, byid = TRUE)
 diag(p1_matrix) <- NA
 p1_matrix
 
@@ -205,11 +196,11 @@ p1_matrix
 
 colSums(p1_matrix, na.rm=TRUE) == 0
 v1 <- colSums(p1_matrix, na.rm=TRUE) == 0
-all[v1, ] # 98 features left
+s[v1, ] # 98 features left
 
 # plot --
 plot(inclProbs)
-plot(all[v1, ], pch=20, col='black', add=T)
+plot(s[v1, ], pch=20, col='black', cex = 0.3, add=T)
 
 # save points in utm and latlong ----
 ## Save points of design ---
@@ -223,6 +214,13 @@ plot(all2[all2$class=="MBH",], pch=20, col='black', add=T)
 plot(all2[all2$class=="Legacy",], pch=20, col='red', add=T)
 
 #writeOGR(all2, d.dir, "Allclusters-filtered-d7", driver="ESRI Shapefile")
+
+
+## BOSS UP TO HERE ####
+
+
+
+
 
 ## separate Deans and MBH again
 

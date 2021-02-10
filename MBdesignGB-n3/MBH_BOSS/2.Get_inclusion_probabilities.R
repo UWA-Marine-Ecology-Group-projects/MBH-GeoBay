@@ -23,7 +23,8 @@ s.dir <- paste(m.dir,"SpatialData",sep="/")
 #read in data
 
 SWDat <- readRDS(paste(d.dir, "GBData_forBOSS.RDS", sep='/'))
-sw_rasters <- readRDS(paste(d.dir,"GBRasters_forBOSS.RDS", sep='/'))
+sw_rasters <- raster(paste(d.dir, "bathy-for-boss.tif", sep='/'))
+#sw_rasters <- readRDS(paste(d.dir,"GBRasters_forBOSS.RDS", sep='/'))
 zones <- readRDS(paste(d.dir, "GBZones_forBOSS.RDS", sep='/'))
 
 # GB marine park polygon ----
@@ -41,8 +42,8 @@ plot(gbs, add=T)
 
 straw.nums <- c(50, 50, 150)  #numbers of drops in and out
 straw.props <- straw.nums / sum( straw.nums) # 0.625 0.375
-names( straw.nums) <- names( straw.props) <- c("HPZ", "NPZ", "gbs")
-saveRDS( straw.nums, file="StrawmanNumbers_Zones.RDS")
+names( straw.nums) <- names( straw.props) <- c("HPZ", "NPZ", "GBS")
+#saveRDS( straw.nums, file="StrawmanNumbers_Zones.RDS")
 
 
 
@@ -60,8 +61,9 @@ tmp <- cumsum( Bathy.quant)
 #Bathy.targetNums <- rep( floor( 18/8), 4)#floor( ( tmp / sum( tmp))[-1] * 200)#rep( 40, 5)#c( 20,20,30,65,65)
 #Bathy.targetNums <- rep( floor( 250/8), 4) # 
 #Bathy.targetProps <-  Bathy.targetNums / sum( Bathy.targetNums) # 0.5 0.5
-Bathy.targetProps <- c(0.1,0.35,0.35,0.2)
-Bathy.targetProps.npz <- c(0, 0.5, 0.5)
+Bathy.targetProps <- c(0.1,0.3, 0.4, 0.2)
+Bathy.targetProps.hpz <- c(0.3,0.3,0.3,0.1)
+Bathy.targetProps.npz <- c(0,0.7,0.3)
 
 # Proportion of potential sites in each zone ----
 
@@ -110,7 +112,9 @@ for( zz in c( "HPZ", "NPZ", "GBS")){
   propsOfbathy <- propsOfbathy / sum( propsOfbathy)
   if( zz == "NPZ")
   tmp <- Bathy.targetProps.npz / propsOfbathy
-  else
+  if( zz == "HPZ")
+  tmp <- Bathy.targetProps.hpz / propsOfbathy
+  if( zz == "GBS")
   tmp <- Bathy.targetProps / propsOfbathy #the desired inclusion probs (unstandardised)
   for( ii in 1:length( propsOfbathy)){
     inclProbs[zoneID[[1]][,"cell"]][zoneID[[1]][,"value"]==ii] <- tmp[ii]
@@ -140,5 +144,8 @@ inclProbs@data@values[gbs[[1]][,'cell']] <- inclProbs@data@values[gbs[[1]][,'cel
 plot(inclProbs)
 
 
-writeRaster(inclProbs,paste(d.dir, 'inclProbs_forBOSS.tif', sep='/'), overwrite=TRUE)
-
+writeRaster(inclProbs,paste(d.dir, 'inclProbs_forBOSS_2.tif', sep='/'), overwrite=TRUE)
+t <- raster(paste(d.dir, 'inclProbs_forBOSS.tif', sep='/'))
+plot(t)
+sumr <- cellStats(t, 'sum')
+sumr
