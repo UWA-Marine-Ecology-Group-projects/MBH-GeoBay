@@ -38,13 +38,20 @@ s.dir <- paste(m.dir,"SpatialData",sep="/")
 #read in survey areas data
 # zones is a list of polygons
 
-gb <- readOGR(paste(s.dir, "GeoBay_CMR_UTM.shp", sep='/'))
+#gb <- readOGR(paste(d.dir, "all.zones.GB.Boss.shp", sep='/'))
+gb <- st_read(paste(d.dir, "all.zones.GB.Boss.shp", sep='/'))
 HPZ <- gb[1,]
 #SPZ <- gb[2,]
-NPZ <- gb[3,]
+NPZ <- gb[2,]
 #MUZ <- gb[4,]
+gbs1 <- gb[3,]
+gbs2 <- gb[4,]
+plot(gbs2)
 
-gbs <- readOGR(paste(d.dir, "GB_shallow.shp", sep='/'))
+gbs <- st_union(gbs1, gbs2, by_feature = FALSE)
+plot(gbs)
+
+#gbs <- readOGR(paste(d.dir, "GB_shallow.shp", sep='/'))
 
 
 # if you want to add control sites
@@ -65,8 +72,9 @@ zones$HPZ <- HPZ
 zones$HPZ@data[,1] <- TRUE
 zones$NPZ <- NPZ
 zones$NPZ@data[,1] <- TRUE
-zones$GBS <- gbs 
+zones$GBS <- gbs
 zones$GBS@data[,1] <- TRUE
+
 # add control zones
 # zones$HPZ.c1 <- HPZ.c1
 # zones$HPZ.c1@data[,1] <- TRUE
@@ -80,8 +88,8 @@ zones$GBS@data[,1] <- TRUE
 # zones$NPZ.c2@data[,1] <- TRUE
 
 #combine
-zones$allSurvArea <- union( zones$HPZ, zones$NPZ)
-zones$allSurvArea <- union( zones$allSurvArea, zones$GBS)
+zones$allSurvArea <- st_union( zones$HPZ, zones$NPZ)
+zones$allSurvArea <- st_union( zones$allSurvArea, zones$GBS)
 # zones$allSurvArea <- union( zones$allSurvArea, zones$HPZ.c2)
 # zones$allSurvArea <- union( zones$allSurvArea, zones$HPZ.c3)
 # zones$allSurvArea <- union( zones$allSurvArea, zones$NPZ.c1)
@@ -97,6 +105,7 @@ plot( zones$allSurvArea, col='light grey', border='light grey', add=T)
 plot( zones$HPZ, col='orange', border='green', add=T)
 plot( zones$NPZ, col='green', border='dark green', add=T)
 plot( zones$GBS, col='blue', border='blue', add=T)
+
 # plot( zones$HPZ.c1, add=TRUE, col='light grey', border='orange')
 # plot( zones$HPZ.c2, add=TRUE, col='light grey', border='orange')
 # plot( zones$HPZ.c3, add=TRUE, col='light grey', border='orange')
@@ -111,12 +120,13 @@ bathy <- raster(paste(s.dir, 'bathy-for-Boss.tif', sep ='/'))
 plot(bathy)
 plot(zones$allSurvArea, add=T)
 
-b2 <- mask(bathy, zones$allSurvArea, inverse = T)
+b2 <- mask(bathy, zones$allSurvArea)
 plot(b2)
 
 bhpz <- mask(bathy, HPZ)
 bnpz <- mask(bathy, NPZ)
 bgbs <- mask(bathy, gbs)
+
 
 # Get needed coarse bathy
 #b3 <- crop(bathy, zones$coarsebathyzones)
@@ -134,7 +144,7 @@ bgbs <- mask(bathy, gbs)
 
 gb_rasters <- list()
 gb_rasters$bathy <- bathy
-gb_rasters$gbs <- bgbs
+gb_rasters$GBS <- bgbs
 gb_rasters$HPZ <- bhpz
 gb_rasters$NPZ <- bnpz
 #Nin_rasters$bathy <- raster( x="~/NESP/MonitoringTheme/Ningaloo19/data/Bathy2Aug/depth_195_50m_WGS84.tif")
@@ -175,7 +185,8 @@ gb_rasters$NPZ <- bnpz
 #convert and combine
 tmp1 <- as.data.frame( gb_rasters$HPZ, xy=TRUE)
 tmp2 <- as.data.frame( gb_rasters$NPZ, xy=TRUE)
-tmp3 <- as.data.frame( gb_rasters$gbs, xy=TRUE)
+tmp3 <- as.data.frame( gb_rasters$GBS, xy=TRUE)
+
 # tmp4 <- as.data.frame( HPZ.c2_raster, xy=TRUE)
 # tmp5 <- as.data.frame( HPZ.c3_raster, xy=TRUE)
 # tmp6 <- as.data.frame( NPZ.c1_raster, xy=TRUE)
@@ -185,13 +196,13 @@ tmp8 <- as.data.frame( gb_rasters$bathy, xy=TRUE)
 
 GBDat <- cbind( tmp1, tmp2[,3])
 GBDat <- cbind( GBDat, tmp3[,3])
-# GBDat <- cbind( GBDat, tmp4[,3])
+#GBDat <- cbind( GBDat, tmp4[,3])
 # GBDat <- cbind( GBDat, tmp5[,3])
 # GBDat <- cbind( GBDat, tmp6[,3])
 # GBDat <- cbind( GBDat, tmp7[,3])
 GBDat <- cbind( GBDat, tmp8[,3])
 
-colnames( GBDat) <- c("Eastern", "Northing", "HPZ", "NPZ", "gbs", "bathy")
+colnames( GBDat) <- c("Eastern", "Northing", "HPZ", "NPZ", "GBS", "bathy")
 
 setwd("/home/anitag3/MBH-GeoBay/MBdesignGB-n3/MBH_BOSS/data")
 saveRDS( GBDat, file="GBData_forBOSS.RDS")

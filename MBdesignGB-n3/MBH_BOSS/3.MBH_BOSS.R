@@ -30,7 +30,7 @@ s.dir <- paste(m.dir,"SpatialData",sep="/")
 
 # read in the inclusion probs
 
-inclProbs <- raster(paste(d.dir, "inclProbs_forBOSS_3.tif", sep='/'))
+inclProbs <- raster(paste(d.dir, "inclProbs_forBOSS_4.tif", sep='/'))
 plot(inclProbs)
 inclProbs <- setValues( inclProbs, values( inclProbs) / sum( values( inclProbs), na.rm=TRUE))
 plot(inclProbs)
@@ -169,7 +169,7 @@ allz <- readOGR(paste(d.dir, "all.zones.GB.Boss.shp", sep='/'))
 plot(allz, add=T)
 points(newSites, pch = 20, cex = 0.3)
 
-writeOGR(newSites, o.dir, "GB_BOSS_d3", driver = "ESRI Shapefile")
+writeOGR(newSites, o.dir, "GB_BOSS_d4", driver = "ESRI Shapefile")
 
 
 
@@ -211,7 +211,7 @@ s$IDnumber <- IDnumber
 s
 
 
-writeOGR(newSites, o.dir, "GB_BOSS_d3", driver = "ESRI Shapefile", overwrite = TRUE)
+writeOGR(newSites, o.dir, "GB_BOSS_d4", driver = "ESRI Shapefile", overwrite = TRUE)
 
 
 
@@ -226,7 +226,7 @@ d
 # transform again
 s2 <- spTransform(s, proj4string(d))
 
-writeOGR(newSites, o.dir, "GB_BOSS_d3_utm", driver = "ESRI Shapefile", overwrite = TRUE)
+writeOGR(s2, o.dir, "GB_BOSS_d4_longlat", driver = "ESRI Shapefile", overwrite = TRUE)
 
 
 # plot(inclProbs)
