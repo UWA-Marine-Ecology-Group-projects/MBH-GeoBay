@@ -274,3 +274,46 @@ saveRDS( referenceBRUVS, file="referenceBruvs_forDesign2.RDS")
 
 rm( BRUVS, BRUVS0609_correct)
 rm( list=lso()$OTHERS)
+
+
+## to get bathy for BOSS ----
+
+#gb <- readOGR(paste(d.dir, "all.zones.GB.Boss.shp", sep='/'))
+gb <- readOGR(paste(d.dir, "all.zones.GB.Boss.shp", sep='/'))
+plot(gb, add=T)
+HPZ <- gb[1,]
+#SPZ <- gb[2,]
+NPZ <- gb[2,]
+#MUZ <- gb[4,]
+gbs1 <- gb[3,]
+gbs2 <- gb[4,]
+plot(gbs2)
+
+gbs <- union(gbs1, gbs2)
+plot(gbs)
+
+
+
+#bathymetry from Nick Mortimer (2 Aug)
+bathy <- raster(paste(s.dir, 'GB_CMR_bathy_utm.tif', sep ='/'))
+b <- raster(paste(s.dir, 'GBmultib_lidarUTM_CMR.tif', sep ='/'))
+#s2 <- terrain(bathy, 'slope', neighbors = 8)
+#plot(s2)
+plot(bathy)
+plot(gbs2, add=T)
+
+b2 <- mask(bathy, gb)
+plot(b2)
+
+b3 <- disaggregate(b2, fact = c(23.2, 27.7))
+plot(b3)
+
+b4 <- resample(b3, b)
+plot(b4)
+
+b5 <- raster::merge(b, b4)
+plot(b5)
+
+plot(gb, add=T)
+
+writeRaster(b5, paste(s.dir, "bathy-for-Boss.tif", sep='/'), overwrite = TRUE)
