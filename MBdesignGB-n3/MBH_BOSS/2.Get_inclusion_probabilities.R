@@ -38,6 +38,7 @@ plot(npz, add=T)
 gbs <- zones$GBS
 plot(gbs, add=T)
 
+
 ####  Straw man for numbers of samples in each region ----
 
 straw.nums <- c(50, 50, 150)  #numbers of drops in and out
@@ -63,16 +64,17 @@ tmp <- cumsum( Bathy.quant)
 #Bathy.targetProps <-  Bathy.targetNums / sum( Bathy.targetNums) # 0.5 0.5
 Bathy.targetProps <- c(0.1,0.3, 0.4, 0.2)
 Bathy.targetProps.hpz <- c(0.3,0.3,0.3,0.1)
-Bathy.targetProps.npz <- c(0,0.3,0.7)
+Bathy.targetProps.npz <- c(0,0.05,0.95)
 
 # Proportion of potential sites in each zone ----
 
 SWDat_small <- SWDat[!is.na( SWDat$bathy),]
-tmp <- colSums( SWDat_small[,c("HPZ", "NPZ", "gbs")], na.rm=TRUE) 
+tmp <- colSums( SWDat_small[,c("HPZ", "NPZ", "GBS")], na.rm=TRUE) 
 #tmp[2] <- tmp[2] - tmp[1] # so similar amount of sites in SPZ and MUZ
 tmp[1] # 7495
 tmp[2] # 2676 
 tmp[3]
+
 props <- tmp / nrow( SWDat_small) # inside 0.6966145 - outside 0.2459908 
 props <- props / sum( props) # inside  0.5502533 - outside 0.4497467  
 
@@ -144,7 +146,7 @@ inclProbs@data@values[gbs[[1]][,'cell']] <- inclProbs@data@values[gbs[[1]][,'cel
 plot(inclProbs)
 
 
-writeRaster(inclProbs,paste(d.dir, 'inclProbs_forBOSS_3.tif', sep='/'), overwrite=TRUE)
+writeRaster(inclProbs,paste(d.dir, 'inclProbs_forBOSS_4.tif', sep='/'), overwrite=TRUE)
 
 
 # to check if sum of cells (probs) = 1
