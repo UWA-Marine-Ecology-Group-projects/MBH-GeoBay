@@ -64,7 +64,7 @@ tmp <- cumsum( Bathy.quant)
 #Bathy.targetProps <-  Bathy.targetNums / sum( Bathy.targetNums) # 0.5 0.5
 Bathy.targetProps <- c(0.1,0.3, 0.4, 0.2)
 Bathy.targetProps.hpz <- c(0.3,0.3,0.3,0.1)
-Bathy.targetProps.npz <- c(0,0.05,0.95)
+Bathy.targetProps.npz <- c(0,0.02,0.98)
 
 # Proportion of potential sites in each zone ----
 
@@ -91,7 +91,7 @@ plot(zones$allSurvArea, add=T)
 plot( catB); plot( zones$HPZ, add=T);  plot( zones$NPZ, add=TRUE);  plot( zones$GBS, add=TRUE)
 #plot(swnp, add=T)
 
-writeRaster(catB, paste(d.dir, 'Bathy_cuts_BOSS.tif', sep='/'), overwrite=TRUE)
+#writeRaster(catB, paste(d.dir, 'Bathy_cuts_BOSS.tif', sep='/'), overwrite=TRUE)
 
 plot(catB)
 
@@ -146,7 +146,7 @@ inclProbs@data@values[gbs[[1]][,'cell']] <- inclProbs@data@values[gbs[[1]][,'cel
 plot(inclProbs)
 
 
-writeRaster(inclProbs,paste(d.dir, 'inclProbs_forBOSS_4.tif', sep='/'), overwrite=TRUE)
+writeRaster(inclProbs,paste(d.dir, 'inclProbs_forBOSS_5.tif', sep='/'), overwrite=TRUE)
 
 
 # to check if sum of cells (probs) = 1
