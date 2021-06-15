@@ -143,12 +143,23 @@ inclProbs@data@values[gbs[[1]][,'cell']] <- inclProbs@data@values[gbs[[1]][,'cel
 #inclProbs@data@values[HPZZone[[1]][,'cell']] <- inclProbs@data@values[HPZZone[[1]][,'cell']] * straw.props["HPZ"]
 #inclProbs@data@values[NPZZone[[1]][,'cell']] <- inclProbs@data@values[NPZZone[[1]][,'cell']] * straw.props["NPZ"]
 
+
+
+plot(inclProbs)
+
+
+cellStats(inclProbs , 'sum')
+
+#inclProbs <- inclProbs /100 # first to 1
+#cellStats(inclProbs , 'sum')
+
+## Make sure alt inc probs add up to n  --
+inclProbs <- setValues(inclProbs, values(inclProbs)*200)
+cellStats(inclProbs, 'sum')
 plot(inclProbs)
 
 
 writeRaster(inclProbs,paste(d.dir, 'inclProbs_forBOSS_5.tif', sep='/'), overwrite=TRUE)
 
 
-# to check if sum of cells (probs) = 1
-sumr <- cellStats(inclProbs, 'sum')
-sumr
+
